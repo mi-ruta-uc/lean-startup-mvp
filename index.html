@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innova-Lab | MVP Lean Startup</title>
+    
+    <!-- Tipografías modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary: #818cf8;
+            --accent: #c084fc;
+            --bg-deep: #020617;
+            --glass: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-deep);
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Fondo animado estilo Mesh Gradient */
+        .mesh-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(30, 41, 59, 1) 0px, transparent 80%);
+            filter: blur(80px);
+        }
+
+        /* Logo Fijo Superior con mejora de visibilidad */
+        .logo-fixed-container {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.08); /* Fondo sutil para que el texto del logo se vea */
+            backdrop-filter: blur(5px);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .logo-fixed {
+            height: 35px;
+            filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        /* Botón Pantalla Completa */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            z-index: 101;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        /* Lightbox para ampliar imágenes */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 1rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .lightbox.active img {
+            transform: scale(1);
+        }
+
+        /* Estilo para imágenes clickeables */
+        .zoom-img {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+        .zoom-img:hover {
+            transform: scale(1.02);
+        }
+
+        .presentation-wrapper {
+            perspective: 1000px;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .slide-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide {
+            flex-shrink: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            opacity: 0.3;
+            transform: scale(0.9);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 64rem;
+            max-height: 92vh;
+            padding: 2.5rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .glass-card::-webkit-scrollbar { width: 4px; }
+        .glass-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .serif-italic { font-family: 'Playfair Display', serif; font-style: italic; }
+
+        .progress-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            z-index: 100;
+            transition: width 0.4s ease;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-dot.active { width: 24px; background: var(--primary); border-radius: 4px; }
+
+        /* Estilos de formulario */
+        input, textarea {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus { border-color: var(--primary) !important; outline: none; box-shadow: 0 0 10px rgba(129, 140, 248, 0.2); }
+
+        /* Diseño de cuadrícula de imágenes */
+        .visual-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .visual-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .visual-item:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .visual-item img {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            background: #fff;
+            padding: 10px;
+        }
+        .visual-caption {
+            padding: 1rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        /* Acordeón */
+        .expandable-item {
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 0.75rem;
+        }
+        .expandable-item:hover { background: rgba(255,255,255,0.05); border-color: var(--primary); }
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+        .expandable-item.active .expand-content {
+            max-height: 200px;
+            opacity: 1;
+            padding-top: 0.75rem;
+            padding-bottom: 0.5rem;
+        }
+        .plus-icon { transition: transform 0.4s ease; }
+        .expandable-item.active .plus-icon { transform: rotate(45deg); color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="mesh-gradient"></div>
+    <div id="progress" class="progress-line" style="width: 0%"></div>
+    
+    <!-- Logo Global con contenedor para visibilidad -->
+    <div class="logo-fixed-container" id="logoFixedContainer">
+        <img src="https://i.imgur.com/cjfV02r.png" alt="Logo Innovación" class="logo-fixed">
+    </div>
+
+    <!-- Botón Pantalla Completa -->
+    <button id="fullscreenToggle" class="fullscreen-btn" title="Pantalla Completa">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+
+    <!-- Overlay Lightbox -->
+    <div id="lightboxOverlay" class="lightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="Ampliada">
+    </div>
+
+    <div class="presentation-wrapper">
+        <div id="slides-container" class="slide-container">
+            
+            <!-- Slide 1: Portada (Título cambiado a Innova-Lab) -->
+            <div class="slide active">
+                <div class="glass-card text-center flex flex-col justify-center items-center">
+                    <!-- Logo en portada con fondo claro para asegurar lectura -->
+                    <div class="bg-white/90 p-4 rounded-3xl mb-8 shadow-xl">
+                        <img src="https://i.imgur.com/cjfV02r.png" alt="Logo" class="w-40 filter drop-shadow-[0_0_10px_rgba(0,0,0,0.1)]">
+                    </div>
+                    
+                    <span class="uppercase tracking-[0.3em] text-sm text-indigo-400 font-semibold mb-4">Masterclass 2024</span>
+                    <h1 class="text-7xl md:text-9xl font-extrabold text-gradient mb-6 leading-tight">
+                        Innova-Lab
+                    </h1>
+                    <div class="h-1 w-20 bg-indigo-500 mb-8"></div>
+                    <p class="text-xl md:text-2xl text-slate-300 font-light text-center">Wilson Pareja</p>
+                    <span class="text-slate-500 text-sm uppercase tracking-wider mt-2 text-center block">Fundación Universitaria Comfamiliar</span>
+                </div>
+            </div>
+
+            <!-- Slide 2: El Método Lean Startup -->
+            <div class="slide">
+                <div class="glass-card text-justify text-center md:text-left">
+                    <span class="text-indigo-400 font-bold uppercase tracking-widest text-xs mb-2 block">Contexto</span>
+                    <h2 class="text-4xl font-extrabold mb-8 text-gradient">El Método Lean Startup</h2>
+                    <div class="space-y-6 text-lg text-slate-300 leading-relaxed">
+                        <p>Creado por <span class="text-white font-bold underline decoration-indigo-500">Eric Ries</span>, es una metodología para lanzar negocios eficientemente basada en el aprendizaje validado.</p>
+                        <div class="p-6 bg-white/5 border-l-4 border-indigo-500 rounded-r-xl">
+                            <p class="italic text-slate-200">"Su objetivo es evitar el desperdicio de tiempo y recursos construyendo un Producto Mínimo Viable (MVP) para medir resultados."</p>
+                            <span class="block mt-4 text-xs font-bold text-slate-500 text-right">— Eric Ries</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Pilares -->
+            <div class="slide">
+                <div class="glass-card">
+                    <h2 class="text-3xl font-bold mb-10 text-center uppercase tracking-widest text-gradient">Pilares Fundamentales</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                            <h3 class="text-indigo-300 font-bold mb-2">Construir-Medir-Aprender</h3>
+                            <p class="text-sm text-slate-400">Ciclo central: lanzar un MVP, obtener métricas y mejorar rápidamente.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                            <h3 class="text-indigo-300 font-bold mb-2">MVP</h3>
+                            <p class="text-sm text-slate-400">Funciones mínimas necesarias para aprender del mercado con el menor costo posible.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                            <h3 class="text-indigo-300 font-bold mb-2">Aprendizaje Validado</h3>
+                            <p class="text-sm text-slate-400">Demostrar empíricamente qué valoran los clientes, en lugar de basarse en supuestos.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                            <h3 class="text-indigo-300 font-bold mb-2">Pivotar o Perseverar</h3>
+                            <p class="text-sm text-slate-400">Decidir si cambiar el modelo de negocio o continuar mejorando el actual según datos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: El Ciclo Visual -->
+            <div class="slide">
+                <div class="glass-card text-center">
+                    <h2 class="text-4xl font-bold mb-10 text-gradient">Ciclo de Retroalimentación</h2>
+                    <img src="https://lagrowthmachine.twic.pics/https://lagrowthmachine.com/app/uploads/2023/09/image-2.png" 
+                         alt="Ciclo Lean" class="rounded-xl max-w-2xl w-full border border-white/10 shadow-2xl mx-auto zoom-img" onclick="openLightbox(this.src)">
+                </div>
+            </div>
+
+            <!-- Slide 5: Evolución de Producto -->
+            <div class="slide">
+                <div class="glass-card text-center">
+                    <h2 class="text-3xl font-bold mb-8 text-gradient uppercase tracking-widest">Evolución de Producto</h2>
+                    <div class="visual-grid">
+                        <div class="visual-item">
+                            <img src="https://i.imgur.com/OE41e2F.jpeg" alt="Evolución Incremental" class="zoom-img" onclick="openLightbox(this.src)">
+                            <div class="visual-caption">Evolución Incremental</div>
+                        </div>
+                        <div class="visual-item">
+                            <img src="https://wanaleads.com/wp-content/uploads/2015/12/Minimum-Viable-Product-wanaleads.jpg" alt="Valor desde el inicio" class="zoom-img" onclick="openLightbox(this.src)">
+                            <div class="visual-caption">Validación de Valor</div>
+                        </div>
+                        <div class="visual-item">
+                            <img src="https://i.imgur.com/TEO3RtH.jpeg" alt="Iteración Ágil" class="zoom-img" onclick="openLightbox(this.src)">
+                            <div class="visual-caption">Iteración Ágil</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: Filosofía del MVP -->
+            <div class="slide">
+                <div class="glass-card text-center">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient uppercase tracking-widest">Filosofía del MVP</h2>
+                    <div class="relative group bg-white p-4 rounded-3xl border border-white/20 shadow-2xl">
+                         <img src="https://i.imgur.com/rIVtZwk.jpeg" alt="Filosofía MVP" class="rounded-2xl max-full h-auto mx-auto border border-slate-100 zoom-img" onclick="openLightbox(this.src)">
+                    </div>
+                    <p class="mt-6 text-slate-400 text-sm italic text-center">"No construyas el 100% de una parte inútil, construye el 10% de un valor funcional."</p>
+                </div>
+            </div>
+
+            <!-- Slide 7: Las 3 Fases del MVP -->
+            <div class="slide">
+                <div class="glass-card">
+                    <h2 class="text-3xl font-bold mb-10 text-center uppercase tracking-widest text-gradient">Las 3 Fases del MVP</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-6 rounded-2xl border-t-4 border-purple-500 bg-white/5 text-center">
+                            <div class="text-xl font-bold mb-2 text-purple-400">1. Hipótesis</div>
+                            <p class="text-xs text-slate-400 leading-relaxed text-justify">Identificar el problema central. Entender la necesidad antes que la solución técnica. Es el "por qué" del proyecto.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl border-t-4 border-green-500 bg-white/5 text-center">
+                            <div class="text-xl font-bold mb-2 text-green-400">2. Construcción</div>
+                            <p class="text-xs text-slate-400 leading-relaxed text-justify">Crear la versión más básica que permita probar la hipótesis con el mínimo esfuerzo y costo. El experimento tangible.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl border-t-4 border-orange-500 bg-white/5 text-center">
+                            <div class="text-xl font-bold mb-2 text-orange-400">3. Aprendizaje</div>
+                            <p class="text-xs text-slate-400 leading-relaxed text-justify">Analizar datos reales para validar si se debe pivotar o perseverar. El fin último es aprender.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Ejemplo VeggieBox -->
+            <div class="slide">
+                <div class="glass-card">
+                    <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
+                        <h2 class="text-3xl font-bold text-gradient italic serif-italic">Ejemplo: VeggieBox</h2>
+                    </div>
+                    <div class="grid md:grid-cols-5 gap-8">
+                        <div class="md:col-span-2 space-y-4 pr-4 border-r border-white/5 text-justify">
+                            <p class="text-sm text-slate-300">Rescate de vegetales imperfectos directos del campo.</p>
+                            <div class="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                                <h4 class="text-xs font-bold text-white uppercase mb-2">🎯 Cliente Objetivo</h4>
+                                <p class="text-xs text-slate-400">Jóvenes eco-conscientes (25-35 años) que buscan salud a bajo costo.</p>
+                            </div>
+                        </div>
+                        <div class="md:col-span-3 space-y-3">
+                            <div class="expandable-item p-4 rounded-xl" onclick="this.classList.toggle('active')">
+                                <div class="flex justify-between items-center text-sm font-semibold">1. La Hipótesis <span class="plus-icon">＋</span></div>
+                                <div class="expand-content text-xs text-slate-400 italic">"Los vecinos comprarán vegetales feos si son frescos y 40% más baratos."</div>
+                            </div>
+                            <div class="expandable-item p-4 rounded-xl" onclick="this.classList.toggle('active')">
+                                <div class="flex justify-between items-center text-sm font-semibold">2. El MVP <span class="plus-icon">＋</span></div>
+                                <div class="expand-content text-xs text-slate-400 leading-relaxed">WhatsApp de 15 personas. Catálogo PDF semanal. Reparto manual en bicicleta los sábados.</div>
+                            </div>
+                            <div class="expandable-item p-4 rounded-xl" onclick="this.classList.toggle('active')">
+                                <div class="flex justify-between items-center text-sm font-semibold text-indigo-300 font-bold">3. Aprendizaje Validado <span class="plus-icon">＋</span></div>
+                                <div class="expand-content text-xs text-slate-300 italic text-justify">Resultado: 80% de pedidos pero dudas en cocina. <br><strong>Pivote:</strong> Incluir recetas rápidas en cada entrega.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: Referentes Mundiales -->
+            <div class="slide">
+                <div class="glass-card">
+                    <h2 class="text-4xl font-bold mb-6 text-center text-gradient">Referentes Mundiales</h2>
+                    <div class="space-y-2">
+                        <div class="expandable-item p-3.5 rounded-xl" onclick="this.classList.toggle('active')">
+                            <div class="flex justify-between items-center font-bold text-indigo-300 text-sm"><span>Dropbox: El MVP de humo</span><span class="plus-icon">＋</span></div>
+                            <div class="expand-content text-xs text-slate-400 leading-relaxed text-justify">No construyeron el software al inicio. Lanzaron un video de 3 min. Su lista de espera pasó de 5k a 75k en una noche.</div>
+                        </div>
+                        <div class="expandable-item p-3.5 rounded-xl" onclick="this.classList.toggle('active')">
+                            <div class="flex justify-between items-center font-bold text-indigo-300 text-sm"><span>Airbnb: Colchones en la sala</span><span class="plus-icon">＋</span></div>
+                            <div class="expand-content text-xs text-slate-400 leading-relaxed text-justify">En 2007, los fundadores convirtieron su sala en un espacio con colchones de aire y desayuno para pagar el alquiler.</div>
+                        </div>
+                        <div class="expandable-item p-3.5 rounded-xl" onclick="this.classList.toggle('active')">
+                            <div class="flex justify-between items-center font-bold text-indigo-300 text-sm"><span>Zappos: Aprendizaje sin stock</span><span class="plus-icon">＋</span></div>
+                            <div class="expand-content text-xs text-slate-400 leading-relaxed text-justify">El fundador tomaba fotos de zapatos en tiendas locales y las subía a una web. Si compraban, él los compraba y enviaba.</div>
+                        </div>
+                        <div class="expandable-item p-3.5 rounded-xl" onclick="this.classList.toggle('active')">
+                            <div class="flex justify-between items-center font-bold text-indigo-300 text-sm"><span>Instagram: El pivote radical</span><span class="plus-icon">＋</span></div>
+                            <div class="expand-content text-xs text-slate-400 leading-relaxed text-justify">Comenzó como Burbn. Al ver que los usuarios solo usaban fotos, eliminaron el resto y pivotaron al éxito.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 10: Laboratorio de Innovación -->
+            <div class="slide">
+                <div class="glass-card">
+                    <div id="form-container">
+                        <h2 class="text-3xl font-bold mb-1 text-gradient">Laboratorio de Innovación</h2>
+                        <p class="text-[10px] text-slate-500 mb-4 uppercase tracking-widest text-center md:text-left">Sincroniza tu experimento con la base de datos</p>
+                        
+                        <form id="project-form" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <input type="text" name="project" required class="p-2.5 rounded-xl text-xs" placeholder="Nombre del Proyecto">
+                            <input type="text" name="target" required class="p-2.5 rounded-xl text-xs" placeholder="Early Adopter">
+                            <div class="md:col-span-2"><input type="text" name="team" required class="w-full p-2.5 rounded-xl text-xs" placeholder="Miembros del equipo"></div>
+                            <textarea name="hypothesis" required class="p-2.5 rounded-xl text-xs h-12" placeholder="Fase 1: Hipótesis del Problema"></textarea>
+                            <textarea name="mvp" required class="p-2.5 rounded-xl text-xs h-12" placeholder="Fase 2: El MVP (Experimento)"></textarea>
+                            <textarea name="learning" required class="p-2.5 rounded-xl text-xs h-12 border-indigo-500/30" placeholder="Fase 3: Métrica de Aprendizaje"></textarea>
+                            <div class="flex flex-col gap-1 md:col-span-2">
+                                <label class="text-[9px] text-indigo-300 uppercase tracking-widest ml-1">Evidencia (Link de Drive/Canva/Video)</label>
+                                <input type="url" name="evidence" class="p-2.5 rounded-xl text-xs" placeholder="https://ejemplo.com/mi-evidencia">
+                            </div>
+                            <div class="md:col-span-2 mt-1">
+                                <button type="submit" id="submit-btn" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/40 active:scale-[0.98] transition text-sm text-center">Enviar Innovación</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="success-msg" class="hidden text-center py-8">
+                        <div class="text-5xl mb-4 text-indigo-400 animate-bounce">🚀</div>
+                        <h3 class="text-2xl font-bold text-white mb-2 italic serif-italic text-center">¡Experimento Registrado!</h3>
+                        <p class="text-slate-400 text-sm text-center">Los datos se han sincronizado correctamente.</p>
+                        <button onclick="resetForm()" class="mt-6 text-xs text-indigo-400 underline uppercase tracking-widest block mx-auto text-center">Nuevo registro</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 11: Empatía -->
+            <div class="slide">
+                <div class="glass-card text-center">
+                    <h2 class="text-4xl font-bold mb-6 italic serif-italic text-gradient text-center">La empatía es el inicio</h2>
+                    <img src="https://designthinking.gal/wp-content/uploads/2017/10/ponerse-en-sus-zapatos-1.jpg" alt="Empatía con el usuario" class="max-w-md w-full rounded-2xl mx-auto shadow-2xl mb-8 border border-white/10 zoom-img" onclick="openLightbox(this.src)">
+                    <a href="https://innovacion-con-clase.github.io/mapa-de-empatia/" target="_blank" class="px-12 py-4 bg-white text-indigo-950 rounded-full font-bold hover:scale-110 transition inline-block text-center text-center">Ver Mapa de Empatía</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- UI Controles -->
+    <div id="dot-nav" class="fixed bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-50"></div>
+    <div class="fixed bottom-10 right-10 flex gap-4 z-50">
+        <button id="prevBtn" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/20 transition disabled:opacity-20 backdrop-blur-md"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="nextBtn" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-500 transition shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+
+    <script>
+        const container = document.getElementById('slides-container');
+        const slides = document.querySelectorAll('.slide');
+        const dotNav = document.getElementById('dot-nav');
+        const progress = document.getElementById('progress');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const logoFixedContainer = document.getElementById('logoFixedContainer');
+        const fullscreenBtn = document.getElementById('fullscreenToggle');
+        const lightbox = document.getElementById('lightboxOverlay');
+        const lightboxImg = document.getElementById('lightboxImg');
+        let currentIdx = 0;
+
+        // --- LÓGICA DE LIGHTBOX ---
+        window.openLightbox = (src) => {
+            lightboxImg.src = src;
+            lightbox.classList.add('active');
+        };
+
+        window.closeLightbox = () => {
+            lightbox.classList.remove('active');
+        };
+
+        // --- LÓGICA DE PANTALLA COMPLETA ---
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error al activar pantalla completa: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = `nav-dot ${i === 0 ? 'active' : ''}`;
+            dot.onclick = () => goToSlide(i);
+            dotNav.appendChild(dot);
+        });
+
+        function updateUI() {
+            container.style.transform = `translateX(-${currentIdx * 100}vw)`;
+            slides.forEach((slide, i) => slide.classList.toggle('active', i === currentIdx));
+            document.querySelectorAll('.nav-dot').forEach((dot, i) => dot.classList.toggle('active', i === currentIdx));
+            progress.style.width = `${(currentIdx / (slides.length - 1)) * 100}%`;
+            
+            // Ocultar el logo fijo solo en la portada para evitar que se pise con el logo central
+            if (currentIdx === 0) {
+                logoFixedContainer.style.opacity = '0';
+                logoFixedContainer.style.transform = 'translateY(-20px)';
+            } else {
+                logoFixedContainer.style.opacity = '1';
+                logoFixedContainer.style.transform = 'translateY(0)';
+            }
+
+            prevBtn.disabled = currentIdx === 0;
+            nextBtn.style.visibility = (currentIdx === slides.length - 1) ? 'hidden' : 'visible';
+        }
+
+        function goToSlide(idx) { if (idx >= 0 && idx < slides.length) { currentIdx = idx; updateUI(); } }
+        nextBtn.addEventListener('click', () => goToSlide(currentIdx + 1));
+        prevBtn.addEventListener('click', () => goToSlide(currentIdx - 1));
+
+        document.addEventListener('keydown', (e) => {
+            const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+            if (isTyping) return;
+
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                goToSlide(currentIdx + 1);
+            }
+            if (e.key === 'ArrowLeft') {
+                goToSlide(currentIdx - 1);
+            }
+            if (e.key === 'Escape') {
+                if (lightbox.classList.contains('active')) closeLightbox();
+            }
+        });
+
+        const projectForm = document.getElementById('project-form');
+        const formContainer = document.getElementById('form-container');
+        const successMsg = document.getElementById('success-msg');
+        const submitBtn = document.getElementById('submit-btn');
+
+        projectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sincronizando...';
+            
+            const G_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby19PSfW5SoWIYWZOjwR7COUaU2AnbogXsmpIwwaylf7IykiGpT7y449jaNlDoe61JV/exec'; 
+            const data = Object.fromEntries(new FormData(projectForm).entries());
+
+            try {
+                await fetch(G_SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data) 
+                });
+                formContainer.classList.add('hidden'); 
+                successMsg.classList.remove('hidden');
+            } catch (error) { 
+                console.error('Error de envío:', error);
+                submitBtn.textContent = 'Error. Reintentar'; 
+                submitBtn.disabled = false; 
+            }
+        });
+
+        function resetForm() { 
+            projectForm.reset(); 
+            formContainer.classList.remove('hidden'); 
+            successMsg.classList.add('hidden'); 
+            submitBtn.disabled = false; 
+            submitBtn.textContent = 'Enviar Innovación'; 
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
